@@ -1,14 +1,17 @@
-import axios from "axios";
 import { useState } from "react";
+import axios from "axios";
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  console.log("test");
+
   async function register(event) {
     event.preventDefault();
-    const response = await axios.post("/register", { username, password });
-    console.log(response);
+    console.log("hi");
+    await axios.post("/register", { username, password });
+    console.log("Bye");
   }
 
   return (
@@ -28,7 +31,10 @@ export default function Register() {
           placeholder="password"
           className="block w-full rounded-sm p-2 mb-2 border"
         />
-        <button className="bg-blue-400 text-white w-full rounded-sm p-2">
+        <button
+          type="submit"
+          className="bg-blue-400 text-white w-full rounded-sm p-2"
+        >
           Register
         </button>
       </form>
