@@ -17,7 +17,7 @@ app.use(
 );
 
 // connect to mongoDB
-mongoose.connect(process.env.MONGO_URL);
+mongoose.connect("mongodb://127.0.0.1:27017/testUser");
 
 const jwtSecret = process.env.JWT_SECRET;
 
@@ -28,6 +28,7 @@ app.get("/test", (req, res) => {
 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
+  console.log(username, password);
   // create a new user
   try {
     const createdUser = await new User({
@@ -43,7 +44,7 @@ app.post("/register", async (req, res) => {
         res
           .cookie("token", token, { sameSite: "none", secure: true })
           .status(201)
-          .json("ok good");
+          .json({ id: createdUser._id });
       }
     );
   } catch (err) {
