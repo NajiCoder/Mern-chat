@@ -1,6 +1,21 @@
+import { useState } from "react";
+import { useEffect } from "react";
 import { BsFillSendFill } from "react-icons/bs";
 
 export default function Chat() {
+  const [wsConnection, setWsConnection] = useState(null);
+
+  // Add connection to the websocket server
+  useEffect(() => {
+    const wsConnection = new WebSocket("ws://localhost:3030");
+    setWsConnection(wsConnection);
+    wsConnection.addEventListener("message", handleMessage);
+  }, []);
+
+  function handleMessage(event) {
+    console.log("new message", event);
+  }
+
   return (
     <div className="flex h-screen">
       <div className="bg-blue-100 w-1/3">Contacts</div>

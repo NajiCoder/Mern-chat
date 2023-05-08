@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const User = require("./Models/User");
+const ws = require("ws");
 
 const app = express();
 app.use(express.json());
@@ -109,6 +110,31 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.listen(3030, () => {
+const server = app.listen(3030, () => {
   console.log("Server started on port 3030");
+});
+
+// Websocket
+const webSocketServer = new ws.Server({ server }); // create a new websocket server
+webSocketServer.on("connection", (connection, req) => {
+  const cookies = req.headers.cookie;
+  if (cookies) {
+    // get the token from the cookie array
+    const tokenCookieString = cookies
+      .split(";")
+      .find((str) => str.startsWith("token="));
+    if (tokenCookieString) {
+      const token = tokenCookieString.split("=")[1];
+      try {
+        jwt.verify(token, jwtSecret, {}, (err, userDate) => {
+          if (err) throw err;
+          const { userId, username } = userDate;
+          connection.userId = userId;
+          connection.username = username;
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
 });
