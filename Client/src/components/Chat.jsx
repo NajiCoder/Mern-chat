@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import { BsFillSendFill } from "react-icons/bs";
+import { IoMdChatbubbles } from "react-icons/io";
 
 export default function Chat() {
   const [wsConnection, setWsConnection] = useState(null);
+
+  const [onlinePeople, setOnlinePeople] = useState({}); // [{userId, username}
 
   // Add connection to the websocket server
   useEffect(() => {
@@ -12,14 +15,35 @@ export default function Chat() {
     wsConnection.addEventListener("message", handleMessage);
   }, []);
 
+  function showOnlinePeople(peopleArray) {
+    const people = {};
+    peopleArray.forEach(({ userId, username }) => {
+      people[userId] = username;
+    });
+    setOnlinePeople(people);
+  }
+
   function handleMessage(event) {
-    console.log("new message", event);
+    const messageData = JSON.parse(event.data);
+    if ("online" in messageData) {
+      showOnlinePeople(messageData.online);
+    }
   }
 
   return (
     <div className="flex h-screen">
-      <div className="bg-blue-100 w-1/3">Contacts</div>
-      <div className="bg-blue-300 w-2/3 flex flex-col">
+      <div className="bg-blue-100 w-1/3 pl-4 pt-4">
+        <div className="text-xl text-blue-700 font-bold flex gap-1 items-center mb-4">
+          {" "}
+          <IoMdChatbubbles /> MernChat
+        </div>
+        {Object.keys(onlinePeople).map((userId, index) => (
+          <div className="border-b border-gray-100 py-2" key={index}>
+            {onlinePeople[userId]}
+          </div>
+        ))}
+      </div>
+      <div className="bg-blue-300 w-2/3 flex flex-col pt-4">
         <div className="flex-grow">Messages here</div>
         <div className="flex gap-1 mx-2">
           <input

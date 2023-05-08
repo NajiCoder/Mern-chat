@@ -137,4 +137,16 @@ webSocketServer.on("connection", (connection, req) => {
       }
     }
   }
+
+  [...webSocketServer.clients].forEach((client) => {
+    // send the online users to the client
+    client.send(
+      JSON.stringify({
+        online: [...webSocketServer.clients].map((client) => ({
+          userId: client.userId,
+          username: client.username,
+        })),
+      })
+    );
+  });
 });
