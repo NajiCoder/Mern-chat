@@ -21,7 +21,6 @@ export default function Avatar({ username, userId }) {
     "bg-warmGray-200",
     "bg-trueGray-200",
     "bg-coolGray-200",
-    "bg-blueGray-200",
   ];
 
   const userIdBase10 = parseInt(userId, 16);

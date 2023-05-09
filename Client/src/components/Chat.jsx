@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useEffect } from "react";
 import { BsFillSendFill } from "react-icons/bs";
-import { IoMdChatbubbles } from "react-icons/io";
 import Avatar from "./Avatar";
+import Logo from "./Logo";
+import { UserContext } from "../UserContext";
 
 export default function Chat() {
   const [wsConnection, setWsConnection] = useState(null);
 
   const [onlinePeople, setOnlinePeople] = useState({}); // [{userId, username}
+
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  const { username, id } = useContext(UserContext);
 
   // Add connection to the websocket server
   useEffect(() => {
@@ -31,25 +36,45 @@ export default function Chat() {
     }
   }
 
+  function selectContact(userId) {
+    setSelectedUserId(userId);
+  }
+
+  const onlinePeopleExcludingCurrentUser = { ...onlinePeople };
+  delete onlinePeopleExcludingCurrentUser[id];
+
   return (
     <div className="flex h-screen">
-      <div className="bg-blue-100 w-1/3 pl-4 pt-4">
-        <div className="text-xl text-blue-700 font-bold flex gap-1 items-center mb-4">
-          {" "}
-          <IoMdChatbubbles /> MernChat
-        </div>
-        {Object.keys(onlinePeople).map((userId, index) => (
+      <div className="bg-blue-100 w-1/3">
+        <Logo />
+        {Object.keys(onlinePeopleExcludingCurrentUser).map((userId, index) => (
           <div
-            className="flex items-center gap-2 border-b border-gray-100 py-2"
+            onClick={() => selectContact(userId)}
+            className={
+              "flex items-center gap-2 border-b border-gray-100 " +
+              (userId === selectedUserId ? "bg-rose-100" : "")
+            }
             key={index}
           >
-            <Avatar username={onlinePeople[userId]} userId={userId} />
-            <span className="text-gray-800">{onlinePeople[userId]}</span>
+            {userId === selectedUserId && (
+              <div className="w-1 h-10 bg-blue-700 rounded-md"></div>
+            )}
+
+            <div className="flex items-center gap-2 py-2 pl-4">
+              <Avatar username={onlinePeople[userId]} userId={userId} />
+              <span className="text-gray-800">{onlinePeople[userId]}</span>
+            </div>
           </div>
         ))}
       </div>
       <div className="bg-blue-300 w-2/3 flex flex-col pt-4">
-        <div className="flex-grow">Messages here</div>
+        <div className="flex-grow">
+          {!selectedUserId && (
+            <div className="flex flex-col items-center justify-center h-full">
+              <div className="text-gray-500">&larr; selecte a person</div>
+            </div>
+          )}
+        </div>
         <div className="flex gap-1 mx-2">
           <input
             type="text"
