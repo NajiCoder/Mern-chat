@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { BsFillSendFill } from "react-icons/bs";
 import { IoMdChatbubbles } from "react-icons/io";
+import Avatar from "./Avatar";
 
 export default function Chat() {
   const [wsConnection, setWsConnection] = useState(null);
@@ -38,8 +39,12 @@ export default function Chat() {
           <IoMdChatbubbles /> MernChat
         </div>
         {Object.keys(onlinePeople).map((userId, index) => (
-          <div className="border-b border-gray-100 py-2" key={index}>
-            {onlinePeople[userId]}
+          <div
+            className="flex items-center gap-2 border-b border-gray-100 py-2"
+            key={index}
+          >
+            <Avatar username={onlinePeople[userId]} userId={userId} />
+            <span className="text-gray-800">{onlinePeople[userId]}</span>
           </div>
         ))}
       </div>
