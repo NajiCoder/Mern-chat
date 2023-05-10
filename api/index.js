@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const User = require("./Models/User");
+const Message = require("./Models/Message");
 const ws = require("ws");
 
 const app = express();
@@ -117,6 +118,7 @@ const server = app.listen(3030, () => {
 // Websocket
 const webSocketServer = new ws.Server({ server }); // create a new websocket server
 webSocketServer.on("connection", (connection, req) => {
+  // read the username and id from the cookie for this connection
   const cookies = req.headers.cookie;
   if (cookies) {
     // get the token from the cookie array
@@ -138,6 +140,35 @@ webSocketServer.on("connection", (connection, req) => {
     }
   }
 
+  connection.on("message", async (message) => {
+    const messageData = JSON.parse(message.toString());
+    const { recipient, text } = messageData;
+    // find the recipient
+    if (recipient && text) {
+      // save the message to the database
+      console.log(text);
+      const newMessage = await new Message({
+        messageText: text,
+        sender: connection.userId,
+        receiver: recipient,
+      });
+      await newMessage.save();
+      [...webSocketServer.clients]
+        .filter((client) => client.userId === recipient)
+        .forEach((client) =>
+          client.send(
+            JSON.stringify({
+              text,
+              sender: connection.userId,
+              id: newMessage._id,
+            })
+          )
+        );
+      console.log(text);
+    }
+  });
+
+  // Notify all clients about all online users
   [...webSocketServer.clients].forEach((client) => {
     // send the online users to the client
     client.send(

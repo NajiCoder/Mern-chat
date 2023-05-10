@@ -12,6 +12,10 @@ export default function Chat() {
 
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+  const [newMessageText, setNewMessageText] = useState("");
+
+  const [messages, setMessages] = useState([]);
+
   const { username, id } = useContext(UserContext);
 
   // Add connection to the websocket server
@@ -31,13 +35,34 @@ export default function Chat() {
 
   function handleMessage(event) {
     const messageData = JSON.parse(event.data);
+    console.log(messageData);
     if ("online" in messageData) {
       showOnlinePeople(messageData.online);
+    } else {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: messageData.text, isOurs: false },
+      ]);
     }
   }
 
   function selectContact(userId) {
     setSelectedUserId(userId);
+  }
+
+  function sendMessage(event) {
+    event.preventDefault();
+    wsConnection.send(
+      JSON.stringify({
+        recipient: selectedUserId,
+        text: newMessageText,
+      })
+    );
+    setNewMessageText("");
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: newMessageText, isOurs: true },
+    ]);
   }
 
   const onlinePeopleExcludingCurrentUser = { ...onlinePeople };
@@ -60,7 +85,7 @@ export default function Chat() {
               <div className="w-1 h-10 bg-blue-700 rounded-md"></div>
             )}
 
-            <div className="flex items-center gap-2 py-2 pl-4">
+            <div className="flex items-center gap-2 py-2 pl-4 cursor-pointer">
               <Avatar username={onlinePeople[userId]} userId={userId} />
               <span className="text-gray-800">{onlinePeople[userId]}</span>
             </div>
@@ -74,17 +99,31 @@ export default function Chat() {
               <div className="text-gray-500">&larr; selecte a person</div>
             </div>
           )}
+          {selectedUserId && (
+            <div>
+              {messages.map((message, index) => (
+                <div key={index}>{message.text}</div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="flex gap-1 mx-2">
-          <input
-            type="text"
-            placeholder="Type a message"
-            className="flex-grow p-2 border rounded bg-slate-50"
-          />
-          <button className="bg-blue-700 p-2 flex items-center justify-center text-white rounded-lg w-14">
-            <BsFillSendFill className="rotate-12 " />
-          </button>
-        </div>
+        {selectedUserId && (
+          <form className="flex gap-1 mx-2" onSubmit={sendMessage}>
+            <input
+              type="text"
+              placeholder="Type a message"
+              className="flex-grow p-2 border rounded bg-slate-50"
+              value={newMessageText}
+              onChange={(event) => setNewMessageText(event.target.value)}
+            />
+            <button
+              type="submit"
+              className="bg-blue-700 p-2 flex items-center justify-center text-white rounded-lg w-14"
+            >
+              <BsFillSendFill className="rotate-12 " />
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
