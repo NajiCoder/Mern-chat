@@ -2,7 +2,16 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Add your custom colors here
+        "purple-light": "#8294C4",
+        peach: "#FFead2",
+        lavender: "#DBDFEA",
+        "blue-gray": "#ACB1D6",
+      },
+    },
   },
+
   plugins: [],
 };
