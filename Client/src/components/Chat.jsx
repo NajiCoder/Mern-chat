@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { useEffect } from "react";
 import { uniqBy } from "lodash";
 import { BsFillSendFill } from "react-icons/bs";
@@ -18,6 +18,9 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
 
   const { username, id } = useContext(UserContext);
+
+  // reference the messages div so we can scroll to the bottom
+  const messagesDivRef = useRef();
 
   // Add connection to the websocket server
   useEffect(() => {
@@ -64,16 +67,26 @@ export default function Chat() {
         text: newMessageText,
         sender: { name: username, id: id },
         recipient: selectedUserId,
+        // we can only see the first message we send, because it doesn't have a messageId yet only the recipient has it
+        messageId: Date.now(), // this will unsure that each message we send has a unique id
       },
     ]);
   }
+
+  // use useEffect to scroll to the bottom of the messages
+  useEffect(() => {
+    // scroll to the bottom of the messages div when we select a new contact
+    const div = messagesDivRef.current;
+    if (div) {
+      div.scrollTop = div.scrollHeight;
+    }
+  }, [messages]);
 
   const onlinePeopleExcludingCurrentUser = { ...onlinePeople };
   delete onlinePeopleExcludingCurrentUser[id];
 
   // filter out duplicate messages using lodash
-  const messagesWithoutDuplicates = uniqBy(messages, "id");
-
+  const messagesWithoutDuplicates = uniqBy(messages, "messageId");
   return (
     <div className="flex h-screen">
       <div className="bg-blue-gray w-1/3">
@@ -106,30 +119,35 @@ export default function Chat() {
             </div>
           )}
           {selectedUserId && (
-            <div className="">
-              {messagesWithoutDuplicates.map((message, index) => (
-                // <div
-                //   key={index}
-                //   className={
-                //     message.sender.id === id ? "text-right" : "text-left"
-                //   }
-                // >
-                <div
-                  key={index}
-                  // className={
-                  //   "text-right p-2 my-2 text-sm rounded-xl  " +
-                  //   (message.sender.id === id
-                  //     ? "bg-lavender text-white"
-                  //     : "bg-peach text-gray-400")
-                  // }
-                >
-                  {/* sender: {message.sender.id} <br />
-                  recipient: {message.recipient} <br />
-                  my id: {id} <br /> */}
-                  {message.text}
-                </div>
-                // </div>
-              ))}
+            <div className="relative h-full">
+              <div
+                ref={messagesDivRef}
+                className="overflow-y-scroll absolute inset-0"
+              >
+                {messagesWithoutDuplicates.map((message) => (
+                  <div
+                    key={message.id}
+                    className={
+                      message.sender.id === id ? "text-right " : "text-left"
+                    }
+                  >
+                    <div
+                      key={message.id}
+                      className={
+                        "text-left inline-block p-2 m-2 text-sm rounded-xl  " +
+                        (message.sender.id === id
+                          ? "bg-lavender text-gray-800"
+                          : "bg-peach text-gray-600")
+                      }
+                    >
+                      sender: {message.sender.id} <br />
+                      recipient: {message.recipient} <br />
+                      my id: {id} <br />
+                      {message.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
