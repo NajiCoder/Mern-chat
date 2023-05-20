@@ -25,10 +25,22 @@ export default function Chat() {
 
   // Add connection to the websocket server
   useEffect(() => {
+    connectToWs();
+  }, []);
+
+  // Fix the websocket connection when it closes on every update on the server or the client lost connection
+  function connectToWs() {
+    // use recursion to keep trying to connect to the websocket server
     const wsConnection = new WebSocket("ws://localhost:3030");
     setWsConnection(wsConnection);
     wsConnection.addEventListener("message", handleMessage);
-  }, []);
+    wsConnection.addEventListener("close", () => {
+      setTimeout(() => {
+        console.log("reconnecting...");
+        connectToWs();
+      }, 1000);
+    });
+  }
 
   function showOnlinePeople(peopleArray) {
     const people = {};
