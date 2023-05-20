@@ -66,7 +66,7 @@ app.get("/messages/:userId", async (req, res) => {
   const messages = await Message.find({
     sender: { $in: [userId, currentUserId] },
     receiver: { $in: [userId, currentUserId] },
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: 1 });
 
   res.json(messages);
 });
@@ -187,7 +187,7 @@ webSocketServer.on("connection", (connection, req) => {
               text,
               sender: connection.userId,
               receiver: recipient,
-              messageId: newMessage._id,
+              _id: newMessage._id,
             })
           )
         );

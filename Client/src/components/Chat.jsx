@@ -97,8 +97,14 @@ export default function Chat() {
 
   // get messages for the selected user
   useEffect(() => {
+    async function getMessages() {
+      const response = await axios.get(`/messages/${selectedUserId}`);
+      console.log(response.data);
+      setMessages(response.data);
+    }
+
     if (selectedUserId) {
-      axios.get(`/messages/${selectedUserId}`);
+      getMessages();
     }
   }, [selectedUserId]);
 
@@ -106,7 +112,7 @@ export default function Chat() {
   delete onlinePeopleExcludingCurrentUser[id];
 
   // filter out duplicate messages using lodash
-  const messagesWithoutDuplicates = uniqBy(messages, "messageId");
+  const messagesWithoutDuplicates = uniqBy(messages, "_id");
   return (
     <div className="flex h-screen">
       <div className="bg-blue-gray w-1/3">
@@ -148,22 +154,19 @@ export default function Chat() {
                   <div
                     key={message.id}
                     className={
-                      message.sender.id === id ? "text-right " : "text-left"
+                      message.sender === id ? "text-right " : "text-left"
                     }
                   >
                     <div
                       key={message.id}
                       className={
                         "text-left inline-block p-2 m-2 text-sm rounded-xl  " +
-                        (message.sender.id === id
+                        (message.sender === id
                           ? "bg-lavender text-gray-800"
                           : "bg-peach text-gray-600")
                       }
                     >
-                      sender: {message.sender.id} <br />
-                      recipient: {message.recipient} <br />
-                      my id: {id} <br />
-                      {message.text}
+                      {message.messageText}
                     </div>
                   </div>
                 ))}
