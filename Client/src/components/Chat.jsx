@@ -5,6 +5,7 @@ import { BsFillSendFill } from "react-icons/bs";
 import Avatar from "./Avatar";
 import Logo from "./Logo";
 import { UserContext } from "../UserContext";
+import axios from "axios";
 
 export default function Chat() {
   const [wsConnection, setWsConnection] = useState(null);
@@ -81,6 +82,13 @@ export default function Chat() {
       div.scrollTop = div.scrollHeight;
     }
   }, [messages]);
+
+  // get messages for the selected user
+  useEffect(() => {
+    if (selectedUserId) {
+      axios.get(`/messages/${selectedUserId}`);
+    }
+  }, [selectedUserId]);
 
   const onlinePeopleExcludingCurrentUser = { ...onlinePeople };
   delete onlinePeopleExcludingCurrentUser[id];

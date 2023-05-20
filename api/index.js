@@ -28,6 +28,18 @@ const jwtSecret = process.env.JWT_SECRET;
 
 const bcryptSalt = bcrypt.genSaltSync(10);
 
+async function getDataFromRequest(req) {
+  const token = req.cookies?.token;
+  if (!token) throw new Error("No token found");
+  try {
+    const verified = jwt.verify(token, jwtSecret);
+    const { userId, username } = verified;
+    return { userId, username };
+  } catch (err) {
+    throw new Error("You need to login");
+  }
+}
+
 // first endpoint
 app.get("/test", (req, res) => {
   res.json("Test good");
@@ -43,6 +55,20 @@ app.get("/profile", async (req, res) => {
   } catch (err) {
     res.status(401).json("You need to Login");
   }
+});
+
+// Get messages for a specific user from the database
+app.get("/messages/:userId", async (req, res) => {
+  const { userId } = req.params; // get the userId from the client axios request
+  const userDate = await getDataFromRequest(req);
+  const currentUserId = userDate.userId;
+  // check for meessages in the database
+  const messages = await Message.find({
+    sender: { $in: [userId, currentUserId] },
+    receiver: { $in: [userId, currentUserId] },
+  }).sort({ createdAt: -1 });
+
+  res.json(messages);
 });
 
 app.post("/register", async (req, res) => {
