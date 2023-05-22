@@ -77,10 +77,10 @@ export default function Chat() {
     setMessages((prevMessages) => [
       ...prevMessages,
       {
-        text: newMessageText,
-        sender: { name: username, id: id },
+        // text: newMessageText,
+        messageText: newMessageText,
+        sender: id,
         recipient: selectedUserId,
-        // we can only see the first message we send, because it doesn't have a messageId yet only the recipient has it
         messageId: Date.now(), // this will unsure that each message we send has a unique id
       },
     ]);
@@ -152,7 +152,7 @@ export default function Chat() {
               >
                 {messagesWithoutDuplicates.map((message) => (
                   <div
-                    key={message.id}
+                    key={message.messageId}
                     className={
                       message.sender === id ? "text-right " : "text-left"
                     }

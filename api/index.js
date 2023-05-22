@@ -172,25 +172,29 @@ webSocketServer.on("connection", (connection, req) => {
     const { recipient, text } = messageData;
     console.log(messageData);
     if (recipient && text) {
-      // save the message to the database
-      const newMessage = new Message({
-        messageText: text,
-        sender: connection.userId,
-        receiver: recipient,
-      });
-      await newMessage.save();
-      [...webSocketServer.clients]
-        .filter((client) => client.userId === recipient)
-        .forEach((client) =>
-          client.send(
-            JSON.stringify({
-              text,
-              sender: connection.userId,
-              receiver: recipient,
-              _id: newMessage._id,
-            })
-          )
-        );
+      try {
+        // save the message to the database
+        const newMessage = new Message({
+          messageText: text,
+          sender: connection.userId,
+          receiver: recipient,
+        });
+        await newMessage.save();
+        [...webSocketServer.clients]
+          .filter((client) => client.userId === recipient)
+          .forEach((client) =>
+            client.send(
+              JSON.stringify({
+                text,
+                sender: connection.userId,
+                receiver: recipient,
+                _id: newMessage._id,
+              })
+            )
+          );
+      } catch (err) {
+        console.error(err);
+      }
     }
   });
 
